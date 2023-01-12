@@ -2,7 +2,7 @@
 
 <data>
     <routers>
-        <router name="R1">
+        <router hostname="R1">
             <interface>
                 <type>GigabitEthernet</type>
                 <number>1</number>
@@ -15,7 +15,7 @@
             </interface>
         </router>
 
-        <router name="R2">
+        <router hostname="R2">
             <interface>
                 <type>FastEthernet</type>
                 <number>0</number>
@@ -33,7 +33,7 @@
             </interface>
         </router>
 
-        <router name="R3">
+        <router hostname="R3">
             <interface>
                 <type>FastEthernet</type>
                 <number>0</number>
@@ -51,7 +51,7 @@
             </interface>
         </router>
 
-        <router name="R4">
+        <router hostname="R4">
             <interface>
                 <type>FastEthernet</type>
                 <number>0</number>
@@ -74,7 +74,7 @@
             </interface>
         </router>
 
-        <router name="R5">
+        <router hostname="R5">
             <interface>
                 <type>FastEthernet</type>
                 <number>0</number>
@@ -97,7 +97,7 @@
             </interface>
         </router>
 
-        <router name="R6">
+        <router hostname="R6">
             <interface>
                 <type>FastEthernet</type>
                 <number>0</number>
@@ -115,7 +115,7 @@
             </interface>
         </router>
 
-        <router name="R7">
+        <router hostname="R7">
             <interface>
                 <type>FastEthernet</type>
                 <number>0</number>
@@ -133,7 +133,7 @@
             </interface>
         </router>
 
-        <router name="R8">
+        <router hostname="R8">
             <interface>
                 <type>FastEthernet</type>
                 <number>0</number>
@@ -151,7 +151,7 @@
             </interface>
         </router>
 
-        <router name="R9">
+        <router hostname="R9">
             <interface>
                 <type>FastEthernet</type>
                 <number>0</number>
@@ -169,7 +169,7 @@
             </interface>
         </router>
 
-        <router name="R10">
+        <router hostname="R10">
             <interface>
                 <type>FastEthernet</type>
                 <number>0</number>
@@ -192,7 +192,7 @@
             </interface>
         </router>
 
-        <router name="R11">
+        <router hostname="R11">
             <interface>
                 <type>FastEthernet</type>
                 <number>0</number>
@@ -215,7 +215,7 @@
             </interface>
         </router>
 
-        <router name="R12">
+        <router hostname="R12">
             <interface>
                 <type>FastEthernet</type>
                 <number>0</number>
@@ -233,7 +233,7 @@
             </interface>
         </router>
 
-        <router name="R13">
+        <router hostname="R13">
             <interface>
                 <type>FastEthernet</type>
                 <number>0</number>
@@ -251,7 +251,7 @@
             </interface>
         </router>
         
-        <router name="R14">
+        <router hostname="R14">
             <interface>
                 <type>GigabitEthernet</type>
                 <number>1</number>
@@ -267,27 +267,27 @@
 
     <AutonomousSystems>
         <AS name="111">
-            <protocol>RIP</protocol>
+            <protocol>RIPNG</protocol>
             <addressing>2001:100:1::/48</addressing>
-            <Contains>R1</Contains>
-            <Contains>R2</Contains>
-            <Contains>R3</Contains>
-            <Contains>R4</Contains>
-            <Contains>R5</Contains>
-            <Contains>R6</Contains>
-            <Contains>R7</Contains>
+            <contains>R1</contains>
+            <contains>R2</contains>
+            <contains>R3</contains>
+            <contains>R4</contains>
+            <contains>R5</contains>
+            <contains>R6</contains>
+            <contains>R7</contains>
         </AS>
 
         <AS name="222">
-            <protocol>OSPF</protocol>
+            <protocol>OSPFv3</protocol>
             <addressing>2001:100:2::/48</addressing>
-            <Contains>R8</Contains>
-            <Contains>R9</Contains>
-            <Contains>R10</Contains>
-            <Contains>R11</Contains>
-            <Contains>R12</Contains>
-            <Contains>R13</Contains>
-            <Contains>R14</Contains>
+            <contains>R8</contains>
+            <contains>R9</contains>
+            <contains>R10</contains>
+            <contains>R11</contains>
+            <contains>R12</contains>
+            <contains>R13</contains>
+            <contains>R14</contains>
         </AS>
     </AutonomousSystems>
 </data>
