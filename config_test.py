@@ -17,6 +17,9 @@ class TestConfig(unittest.TestCase):
     
     def test_getASProtocol(self):
         self.assertEqual(config.getASProtocol(config.initXML(), "222"), 'OSPFv3')
+        
+    def test_getFileName(self):
+        self.assertEqual(config.getFileName(config.initXML()[0][0]), 'i1_startup-config.cfg')
     
 if __name__ == '__main__':
     unittest.main()

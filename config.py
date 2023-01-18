@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
 
 # fichier xml qui regroupe 
-configfile = '/home/alaalouj/Documents/3TC/GNS3/automatisation/source/routeurs.xml' #comment automatiser ça?
+configfile = './routeurs.xml'
 
 # definir les fonctions dont on aura besoin dans le main
 def initXML():
