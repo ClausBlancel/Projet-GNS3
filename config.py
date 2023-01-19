@@ -1,3 +1,4 @@
+import os
 import xml.etree.ElementTree as ET
 
 # fichier xml qui regroupe 
@@ -139,18 +140,26 @@ if __name__ == "__main__":
         if data.tag == 'routers' : 
             for router in data :
                 # on génere la config file et on la remplit d'abord avec ce qui ne dépend pas des interfaces
-                f = open(getFileName(router), "a")
+                try :
+                    os.mkdir("./conf-files")
+                except FileExistsError :
+                    pass
+                
+                try :
+                    f = open("./conf-files/" + getFileName(router), "a")
 
-                defaultInfoHead(f, router)
+                    defaultInfoHead(f, router)
 
-                for interface in router :
-                    writeAddresses(router, interface,f)
+                    for interface in router :
+                        writeAddresses(router, interface,f)
 
-                deployProtocol(router)
+                    deployProtocol(router)
 
-                defaultInfoFoot(f, router)
+                    defaultInfoFoot(f, router)
 
-                f.close()
+                    f.close()
+                except :
+                    print("Error while writing the file")
 
     
 
