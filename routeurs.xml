@@ -1,337 +1,270 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<data>
-    <routers>
+<data qtty='2'>
+    <AS name="111" protocol='RIPNG' nblinks='10' nbrouters='7' addressing='2001:100:1::/48'>        
         <router hostname="R1" Rnumber='1'>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:1:1::1</address>
                 <neighbor>R2</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:1:2::1</address>
                 <neighbor>R3</neighbor>
             </interface>
         </router>
 
         <router hostname="R2" Rnumber='2'>
-            <interface>
+            <interface number='0'>
                 <type>FastEthernet</type>
-                <number>0</number>
                 <address>2001:100:1:7::1</address>
                 <neighbor>R3</neighbor>
             </interface>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:1:1::2</address>
                 <neighbor>R1</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:1:3::1</address>
                 <neighbor>R4</neighbor>
             </interface>
         </router>
 
         <router hostname="R3" Rnumber='3'>
-            <interface>
+            <interface number='0'>
                 <type>FastEthernet</type>
-                <number>0</number>
                 <address>2001:100:1:7::2</address>
                 <neighbor>R2</neighbor>
             </interface>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:1:2::2</address>
                 <neighbor>R1</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:1:4::1</address>
                 <neighbor>R5</neighbor>
             </interface>
         </router>
 
         <router hostname="R4" Rnumber='4'>
-            <interface>
+            <interface number='0'>
                 <type>FastEthernet</type>
-                <number>0</number>
                 <address>2001:100:1:8::1</address>
                 <neighbor>R5</neighbor>
             </interface>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:1:3::2</address>
                 <neighbor>R2</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:1:5::1</address>
                 <neighbor>R6</neighbor>
             </interface>
-            <interface>
+            <interface number='3'>
                 <type>GigabitEthernet</type>
-                <number>3</number>
                 <address>2001:100:1:9::1</address>
                 <neighbor>R7</neighbor>
             </interface>
         </router>
 
         <router hostname="R5" Rnumber='5'>
-            <interface>
+            <interface number='0'>
                 <type>FastEthernet</type>
-                <number>0</number>
                 <address>2001:100:1:8::2</address>
                 <neighbor>R4</neighbor>
             </interface>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:1:4::2</address>
                 <neighbor>R3</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:1:6::1</address>
                 <neighbor>R7</neighbor>
             </interface>
-            <interface>
+            <interface number='3'>
                 <type>GigabitEthernet</type>
-                <number>3</number>
                 <address>2001:100:1:10::1</address>
                 <neighbor>R6</neighbor>
             </interface>
         </router>
 
         <router hostname="R6" Rnumber='6'>
-            <interface>
+            <interface number='0'>
                 <type>FastEthernet</type>
-                <number>0</number>
                 <address>2001:100:1:10::2</address>
                 <neighbor>R5</neighbor>
             </interface>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:1:5::2</address>
                 <neighbor>R4</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:3:1::1</address>
                 <neighbor>R8</neighbor>
             </interface>
         </router>
 
         <router hostname="R7" Rnumber='7'>
-            <interface>
+            <interface number='0'>
                 <type>FastEthernet</type>
-                <number>0</number>
                 <address>2001:100:1:9::2</address>
                 <neighbor>R4</neighbor>
             </interface>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:1:6::2</address>
                 <neighbor>R5</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:3:2::1</address>
                 <neighbor>R9</neighbor>
             </interface>
         </router>
+    </AS>
+
+    <AS name = '222' protocol='OSPFv3' nblinks='10' nbrouters='7' addressing='2001:100:2::/48'>
 
         <router hostname="R8" Rnumber='8'>
-            <interface>
+            <interface number='0'>
                 <type>FastEthernet</type>
-                <number>0</number>
                 <address>2001:100:2:10::1</address>
                 <neighbor>R11</neighbor>
             </interface>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:3:1::2</address>
                 <neighbor>R6</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:2:5::1</address>
                 <neighbor>R10</neighbor>
             </interface>
         </router>
 
         <router hostname="R9" Rnumber='9'>
-            <interface>
+            <interface number='0'>
                 <type>FastEthernet</type>
-                <number>0</number>
                 <address>2001:100:2:9::1</address>
                 <neighbor>R10</neighbor>
             </interface>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:3:2::2</address>
                 <neighbor>R7</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:2:6::1</address>
                 <neighbor>R11</neighbor>
             </interface>
         </router>
 
         <router hostname="R10" Rnumber='10'>
-            <interface>
+            <interface number='0'>
                 <type>FastEthernet</type>
-                <number>0</number>
                 <address>2001:100:2:8::1</address>
                 <neighbor>R11</neighbor>
             </interface>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:2:5::2</address>
                 <neighbor>R8</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:2:3::1</address>
                 <neighbor>R12</neighbor>
             </interface>
-            <interface>
+            <interface number='3'>
                 <type>GigabitEthernet</type>
-                <number>3</number>
                 <address>2001:100:2:9::2</address>
                 <neighbor>R9</neighbor>
             </interface>
         </router>
 
         <router hostname="R11" Rnumber='11'>
-            <interface>
+            <interface number='0'>
                 <type>FastEthernet</type>
-                <number>0</number>
                 <address>2001:100:2:8::2</address>
                 <neighbor>R10</neighbor>
             </interface>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:2:6::2</address>
                 <neighbor>R9</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:2:4::1</address>
                 <neighbor>R13</neighbor>
             </interface>
-            <interface>
+            <interface number='3'>
                 <type>GigabitEthernet</type>
-                <number>3</number>
                 <address>2001:100:2:10::2</address>
                 <neighbor>R8</neighbor>
             </interface>
         </router>
 
         <router hostname="R12" Rnumber='12'>
-            <interface>
+            <interface number='0'>
                 <type>FastEthernet</type>
-                <number>0</number>
                 <address>2001:100:2:7::1</address>
                 <neighbor>R13</neighbor>
             </interface>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:2:3::2</address>
                 <neighbor>R10</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:2:1::1</address>
                 <neighbor>R14</neighbor>
             </interface>
         </router>
 
         <router hostname="R13" Rnumber='13'>
-            <interface>
+            <interface number='0'>
                 <type>FastEthernet</type>
-                <number>0</number>
                 <address>2001:100:2:7::2</address>
                 <neighbor>R12</neighbor>
             </interface>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:2:4::2</address>
                 <neighbor>R11</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:2:2::1</address>
                 <neighbor>R14</neighbor>
             </interface>
         </router>
-        
+            
         <router hostname="R14" Rnumber='14'>
-            <interface>
+            <interface number='1'>
                 <type>GigabitEthernet</type>
-                <number>1</number>
                 <address>2001:100:2:1::2</address>
                 <neighbor>R12</neighbor>
             </interface>
-            <interface>
+            <interface number='2'>
                 <type>GigabitEthernet</type>
-                <number>2</number>
                 <address>2001:100:2:2::2</address>
                 <neighbor>R13</neighbor>
             </interface>
         </router>
-    </routers>
-
-    <AutonomousSystems>
-        <AS name="111">
-            <protocol>RIPNG</protocol>
-            <addressing>2001:100:1::/48</addressing>
-            <contains>R1</contains>
-            <contains>R2</contains>
-            <contains>R3</contains>
-            <contains>R4</contains>
-            <contains>R5</contains>
-            <contains>R6</contains>
-            <contains>R7</contains>
-        </AS>
-
-        <AS name="222">
-            <protocol>OSPFv3</protocol>
-            <addressing>2001:100:2::/48</addressing>
-            <contains>R8</contains>
-            <contains>R9</contains>
-            <contains>R10</contains>
-            <contains>R11</contains>
-            <contains>R12</contains>
-            <contains>R13</contains>
-            <contains>R14</contains>
-        </AS>
-    </AutonomousSystems>
+    </AS>
 </data>
