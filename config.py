@@ -1,3 +1,4 @@
+import os
 import xml.etree.ElementTree as ET
 
 # fichier xml qui regroupe 
@@ -9,24 +10,74 @@ def initXML():
     return tree.getroot() # selectionne la racine de l'arbre à elements (l'ET)
 
 def getRouterName(router): #A jour
+    """_summary_ : Gets the name of a router
+
+    Args:
+        router (ET.Element): the router
+
+    Returns:
+        string: its name
+    """
     return router.get('hostname')
 
+
 def getRouterNumber(router) : #A jour
+    """_summary_ : Gets the number of a router
+
+    Args:
+        router (ET.Element): the router
+
+    Returns:
+        string: its number
+    """
     return router.get('Rnumber')
 
 def getNeighbors(router) : #A jour
+    """_summary_ : Gets the neighbors of a router
+
+    Args:
+        router (ET.Element): the router
+
+    Returns:
+        list: its neighbors
+    """
     lNeighbors = []
     for i in router :
         lNeighbors.append(i.find('neighbor').text)
     return lNeighbors
 
 def getInterfaceAddress(interface):
+    """_summary_ : Gets the ipv6 address of an interface
+
+    Args:
+        interface (ET.Element): the interface
+
+    Returns:
+        string: its ipv6 address
+    """
     return interface.find('address')
 
 def getInterfaceNei(interface):
+    """_summary_ : Gets the neighbor of an interface
+
+    Args:
+        interface (ET.Element): the interface
+
+    Returns:
+        string: its neighbor (the router's name)
+    """
     return interface.find('neighbor').text
 
 def getInterfaceFromNei(router, nei):
+    """_summary_ : Gets the interface of a router's neighbor
+
+    Args:
+        router (ET.Element): the router
+        nei (ET.Element): the neighbor
+
+    Returns:
+        ET.Element: the interface
+    """
     res,n = (0, 0)
     for i in router :
         voisin = getInterfaceNei(i)
@@ -37,17 +88,43 @@ def getInterfaceFromNei(router, nei):
     return router[res]
 
 def getASList(root):
+    """_summary_ : Gets the list of AS
+
+    Args:
+        root (ET.Element): the root of the XML tree
+
+    Returns:
+        list: the list of AS
+    """
     lAS = []
     for AS in root.iter('AS'):
         lAS.append(AS)
     return lAS
 
 def getASPosition(root, ASnumber) : #A jour
+    """_summary_ : Gets the position of an AS in the XML tree
+
+    Args:
+        root (ET.Element): the root of the XML tree
+        ASnumber (int): the number of the AS
+
+    Returns:
+        int: the position of the AS in the XML tree
+    """
     for i in range(len(root)) :
         name = root[i].get('name')
         if ASnumber == int(name) : return i  
 
 def getRoutersInAS(root, ASnumber): # A jour
+    """_summary_ : Gets the routers in an AS
+
+    Args:
+        root (ET.Element): the root of the XML tree
+        ASnumber (int): the number of the AS
+
+    Returns:
+        list: the list of routers in the AS
+    """
     lRouters = []
     n = getASPosition(root, ASnumber)
     for router in root[n].iter('router'):
@@ -55,21 +132,65 @@ def getRoutersInAS(root, ASnumber): # A jour
     return lRouters
 
 def getASLinksNum(root, ASnumber) : #A jour
+    """_summary_ : Gets the number of links of an AS
+
+    Args:
+        root (ET.Element): the root of the XML tree
+        ASnumber (int): the number of the AS
+
+    Returns:
+        int: the number of links of the AS
+    """
     i = getASPosition(root, ASnumber)
     return int((root[i]).get('nblinks'))
 
 def getASProtocol(root, ASnumber): #A jour
+    """_summary_ : Gets the protocol of an AS
+
+    Args:
+        root (ET.Element): the root of the XML tree
+        ASnumber (int): the number of the AS
+
+    Returns:
+        string: the protocol of the AS
+    """
     i = getASPosition(root, ASnumber)
     return (root[i]).get('protocol')
 
 def getASAddress(root, ASnumber): #Defectueux
+    """_summary_ : Gets the addressing of an AS
+
+    Args:
+        root (ET.Element): the root of the XML tree
+        ASnumber (int): the number of the AS
+
+    Returns:
+        string: the addressing of the AS
+    """
     i = getASPosition(root, ASnumber)
     return (root[i]).get('addressing')
 
-def getASName(root, AS) : #A jour
-    return int(AS.get('name'))
+def getASName(root, ASnumber) : #A jour
+    """_summary_ : Gets the name of an AS
+
+    Args:
+        root (ET.Element): the root of the XML tree
+        ASnumber (int): the number of the AS
+
+    Returns:
+        int: the name of the AS
+    """
+    return int(ASnumber.get('name'))
 
 def getFileName(router) : #A jour
+    """_summary_ : Gets the name of the file of a router
+    
+    Args:
+        router (ET.Element): the router
+        
+    Returns:
+        string: the name of the file
+    """
     number = router.get('Rnumber')
     fileName = 'i'+number+'_startup-config.cfg'
     return fileName
@@ -78,11 +199,25 @@ def getFilePath(router) :
     pass
 
 def openConfFile(router) : #A jour
+    """_summary_ : Opens the configuration file of a router
+
+    Args:
+        router (ET.Element): the router
+
+    Returns:
+        io.TextIOWrapper: the configuration file
+    """
     filePath = getFilePath(router)
     return open(filePath, "a")
 
 def writeAddresses(router, interface, f):
+    """_summary_ : Writes the addresses of an interface in the configuration file
 
+    Args:
+        router (ET.Element): the router
+        interface (ET.Element): the interface
+        f (io.TextIOWrapper): the configuration file
+    """
     hostname = router.get('hostname')
 
     f.write("interface "+interface[0].text+interface.get('number')+"/0\n")
@@ -100,26 +235,23 @@ def writeAddresses(router, interface, f):
     f.write("!\n")
 
 def defaultInfoHead(f, router):
-    f.write("service timestamps debug datetime msec\n")
-    f.write("service timestamps log datetime msec\n")
-    f.write("hostname "+router.get('hostname')+"\n")
-    f.write("boot-start-marker\n")
-    f.write("boot-end-marker\n")
-    f.write("no aaa new-model\n")
-    f.write("no ip icmp rate-limit unreachable\n")
-    f.write("ip cef\n")
-    f.write("no ip domain lookup\n")
-    f.write("ipv6 unicast-routing\n")
-    f.write("ipv6 cef\n")
-    f.write("multilink bundle-name authenticated\n")
-    f.write("ip tcp synwait-time 5\n")
-    f.write("!\n")
+    """_summary_ : Writes the default information header of the configuration file
+
+    Args:
+        f (io.TextIOWrapper): the configuration file
+        router (ET.Element): the router
+    """
+    f.write("service timestamps debug datetime msec\nservice timestamps log datetime msec\n!\nhostname "+router.get('hostname')+"\n!\nboot-start-marker\nboot-end-marker\n!\n!\n!\nno aaa new-model\nno ip icmp rate-limit unreachable\nip cef\n!\n!\n!\nno ip domain lookup\nipv6 unicast-routing\nipv6 cef\n!\n!\n!\nmultilink bundle-name authenticated\n!\n!\n!\nip tcp synwait-time 5\n!\n!\n!\n")
 
 def defaultInfoFoot(f, router):
+    """_summary_ : Writes the default information footer of the configuration file
+
+    Args:
+        f (io.TextIOWrapper): the configuration file
+        router (ET.Element): the router
+    """
     hostname = router.get('hostname')
-    f.write("ip forward-protocol nd\n")
-    f.write("no ip http server\n")
-    f.write("no ip http secure-server\n")
+    f.write("ip forward-protocol nd\nno ip http server\nno ip http secure-server\n")
     if hostname in root[1][0] :
         f.write("ipv6 router rip ripng\n")
         f.write(" redistribute connected\n")
@@ -127,24 +259,11 @@ def defaultInfoFoot(f, router):
         n = router.get('Rnumber')
         f.write("ipv6 router ospf 7\n")
         f.write(" router-id "+n+"."+n+"."+n+"."+n+"\n")
-    f.write("\n")
-    f.write("\n")
-    f.write("control-plane\n")
-    f.write("line con 0\n")
-    f.write(" exec-timeout 0 0\n")
-    f.write(" privilege level 15\n")
-    f.write(" logging synchronous\n")
-    f.write(" stopbits 1\n")
-    f.write("line aux 0\n")
-    f.write(" exec-timeout 0 0\n")
-    f.write(" privilege level 15\n")
-    f.write(" logging synchronous\n")
-    f.write(" stopbits 1\n")
-    f.write("line vty 0 4\n")
-    f.write(" login\n")
-    f.write("end\n")
+    f.write("\n\ncontrol-plane\n!\n!\nline con 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline aux 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline vty 0 4\n login\n!\n!\nend\n")
 
-def getRoutersArray(root):
+
+
+def getRoutersArray(root): #Non utilisé pour l'instant : pas de description
     rows = int(root.get('qtty'))
     cols = 1
     for AS in root.iter('AS') :
@@ -165,6 +284,15 @@ def getRoutersArray(root):
     return arr
 
 def getASOfRouter(root, router): #A jour
+    """_summary_ : Gets the AS of a router
+
+    Args:
+        root (ET.Element): the root of the XML tree
+        router (ET.Element): the router
+
+    Returns:
+        int: the AS of the router
+    """
     lAS = getASList(root)
     for AS in lAS :
         pass
@@ -177,10 +305,19 @@ def getASOfRouter(root, router): #A jour
     if hostname in l2 :
         return 222
 
-def getOtherASes(router):
+def getOtherASes(router): 
     pass
 
 def isBorderRouter(root, router) : #A jour
+    """_summary_ : Checks if a router is a border router
+
+    Args:
+        root (ET.Element): the root of the XML tree
+        router (ET.Element): the router
+
+    Returns:
+        (bool, ET.Element, string): boolean indicating if the router is a border router, the neighbor router that is not in the same AS and the address of the ebgp session
+    """
     hostname = getRouterName(router)
     lNeighbors = getNeighbors(router)
     CurrentASRouters = getRoutersInAS(root, getASOfRouter(root, router))
@@ -200,6 +337,12 @@ def isBorderRouter(root, router) : #A jour
     return (border,Router,address_ebgp)
     
 def deployProtocol(root, router):
+    """_summary_ : Writes the protocol configuration of the router
+
+    Args:
+        root (ET.Element): the root of the XML tree
+        router (ET.Element): the router
+    """
     hostname = getRouterName(router)
     n = getRouterNumber(router)
     ASN = getASOfRouter(root, router)
@@ -262,18 +405,26 @@ if __name__ == "__main__":
     for AS in root :
         for router in AS :
             # on génere la config file et on la remplit d'abord avec ce qui ne dépend pas des interfaces
-            f = open(getFileName(router), "w")
+            try :
+                os.mkdir("./conf-files")
+            except FileExistsError :
+                pass
+            
+            try :
+                f = open("./conf-files/" + getFileName(router), "w")
 
-            defaultInfoHead(f, router)
+                defaultInfoHead(f, router)
 
-            for interface in router :
-                writeAddresses(router, interface,f)
+                for interface in router :
+                    writeAddresses(router, interface,f)
 
-            deployProtocol(root, router)
+                deployProtocol(root, router)
 
-            defaultInfoFoot(f, router)
+                defaultInfoFoot(f, router)
 
-            f.close()
+                f.close()
+            except :
+                print("Error while writing the file")
 
     
 
