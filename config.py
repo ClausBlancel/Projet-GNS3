@@ -1,5 +1,6 @@
 import os
 import xml.etree.ElementTree as ET
+import re
 
 # fichier xml qui regroupe 
 configfile = './routeurs.xml'
@@ -367,16 +368,16 @@ def getRoutersArray(root): #Non utilisé pour l'instant : pas de description
         if int(AS.get('nbrouters')) > cols :
             cols = int(AS.get('nbrouters'))
         
-    print(rows, cols)
+    # print(rows, cols)
     arr = [[0 for i in range(cols)] for j in range(rows)]
-    print(arr[0] is arr[1])
+    # print(arr[0] is arr[1])
 
     #for router in root.iter('router') :
 
     for i in range(len(root)) :
         for j in range(len(root[i])) :
             arr[i][j]=root[i][j].get('hostname')
-            print(arr[i][j])
+            # print(arr[i][j])
 
     return arr
 
@@ -439,7 +440,7 @@ def isBorderRouter(root, router) : #A jour
     hostname = getRouterName(router)
     lNeighbors = getNeighbors(router)
     CurrentAS = getASNOfRouter(root, router)
-    print(CurrentAS)
+    # print(CurrentAS)
     CurrentASRouters = getRoutersInAS(root, CurrentAS)
     border = False
     Router = 'None'
@@ -497,7 +498,7 @@ def deployProtocol(root, router):
     if border :
         address = getASAddress(root, ASN)
         address = address[0:11]
-        print(address)
+        # print(address)
 
         nblinks = getASLinksNum(root, ASN)
         for i in range(1,nblinks+1) :
@@ -513,6 +514,24 @@ def deployProtocol(root, router):
     f.write(" exit-address-family\n")
     f.write("!\n")
 
+
+def getConfigFilesPaths(directory, confFiles):
+    """_summary_ : Returns a list of paths to all config files from a directory
+
+    Args:
+        directory (string): path to starting directory
+    """
+    files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+    dirs = [d for d in os.listdir(directory) if os.path.isdir(os.path.join(directory, d))]
+    if files != []:
+        for f in files:
+            if re.match(r'i[0-9]*_startup-config.cfg', f):
+                confFiles.append(os.path.join(directory, f))
+    if dirs != []:
+        for d in dirs:
+            getConfigFilesPaths(os.path.join(directory, d), confFiles)
+    return confFiles
+            
 
 # main
 if __name__ == "__main__":
@@ -551,8 +570,6 @@ if __name__ == "__main__":
 
             defaultInfoHead(f, router)
 
-
-
             for interface in router :
                 writeAddresses(AS, router, interface,f,tree)
 
@@ -561,6 +578,11 @@ if __name__ == "__main__":
             defaultInfoFoot(f, router)
 
             f.close()
+
+    
+    confFiles = []
+    confFiles = getConfigFilesPaths('C:\\Users\\lucas\\GNS3\\projects\\testP\\project-files\\dynamips', confFiles)
+    print(confFiles)
 
     # il reste à faire :
 
