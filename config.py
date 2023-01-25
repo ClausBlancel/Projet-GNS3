@@ -532,6 +532,11 @@ def getConfigFilesPaths(directory, confFiles):
             getConfigFilesPaths(os.path.join(directory, d), confFiles)
     return confFiles
             
+def findConfFilePath(confFiles, routerNumber):
+    for f in confFiles:
+        if f.endswith('i'+str(routerNumber)+'_startup-config.cfg'):
+            return f
+
 
 # main
 if __name__ == "__main__":
@@ -540,15 +545,13 @@ if __name__ == "__main__":
 
     tree, root = initXML() # crée la racine et la stocke dans la variable root
 
+    confFiles = []
+    confFiles = getConfigFilesPaths('C:\\Users\\lucas\\GNS3\\projects\\testP\\project-files\\dynamips', confFiles)
 
     for AS in root :
         setAddresses(root, AS)
         for router in AS :
             # on génere la config file et on la remplit d'abord avec ce qui ne dépend pas des interfaces
-            try :
-                os.mkdir("./conf-files")
-            except FileExistsError :
-                pass
             
             '''try :
                 f = open("./conf-files/" + getFileName(router), "w")
@@ -566,23 +569,23 @@ if __name__ == "__main__":
             except :
                 print("Error while writing the file")'''
 
-            f = open("./conf-files/" + getFileName(router), "w")
+            try :
+                f = open(findConfFilePath(confFiles, getRouterNumber(router)), "w")
 
-            defaultInfoHead(f, router)
+                defaultInfoHead(f, router)
 
-            for interface in router :
-                writeAddresses(AS, router, interface,f,tree)
+                for interface in router :
+                    writeAddresses(AS, router, interface,f,tree)
 
-            deployProtocol(root, router)
+                deployProtocol(root, router)
 
-            defaultInfoFoot(f, router)
+                defaultInfoFoot(f, router)
 
-            f.close()
-
-    
-    confFiles = []
-    confFiles = getConfigFilesPaths('C:\\Users\\lucas\\GNS3\\projects\\testP\\project-files\\dynamips', confFiles)
-    print(confFiles)
+                f.close()
+                print("File written successfully")
+            except :
+                print("Error while writing the file")
+                
 
     # il reste à faire :
 
