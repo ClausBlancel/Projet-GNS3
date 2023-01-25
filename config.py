@@ -571,7 +571,10 @@ if __name__ == "__main__":
 
             try :
                 f = open(findConfFilePath(confFiles, getRouterNumber(router)), "w")
+            except :
+                print("File not found")
 
+            try :
                 defaultInfoHead(f, router)
 
                 for interface in router :
