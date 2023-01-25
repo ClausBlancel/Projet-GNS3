@@ -348,14 +348,17 @@ def defaultInfoFoot(f, router):
     """
     hostname = getRouterName(router)
     f.write("ip forward-protocol nd\nno ip http server\nno ip http secure-server\n")
-    if hostname in root[1][0] :
-        f.write("ipv6 router rip ripng\n")
-        f.write(" redistribute connected\n")
-    elif hostname in root[1][1] :
-        n = router.get('Rnumber')
-        f.write("ipv6 router ospf 7\n")
-        f.write(" router-id "+n+"."+n+"."+n+"."+n+"\n")
-    f.write("\n\ncontrol-plane\n!\n!\nline con 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline aux 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline vty 0 4\n login\n!\n!\nend\n")
+    found = False
+    for routersAS in root[0].iter('router'):
+        if routersAS.get('hostname') == hostname :
+            f.write("!\nipv6 router rip ripng\n redistribute connected\n")
+            found = True
+    if not found :
+        for routersAS in root[1].iter('router'):
+            if routersAS.get('hostname') == hostname :
+                n = router.get('Rnumber')
+                f.write("!\nipv6 router ospf 7\n router-id "+n+"."+n+"."+n+"."+n+"\n")
+    f.write("!\n!\ncontrol-plane\n!\n!\nline con 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline aux 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline vty 0 4\n login\n!\n!\nend\n")
 
 def getRoutersArray(root): #Non utilisé pour l'instant : pas de description
     rows = getASQtty(root)
