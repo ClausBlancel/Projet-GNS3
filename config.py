@@ -308,17 +308,27 @@ def writeAddresses(AS, router, interface, f, tree):
 
     f.write("interface "+getInterfaceType(interface)+getInterfaceNumber(interface)+"/0\n")
     f.write(" no ip address\n")
+
     if int(interface.get('number')) == 0 :
         f.write(" duplex full\n")
     else :
         f.write(" negotiation auto\n")
+
     f.write(" ipv6 address "+getInterfaceAddress(interface)+"/64\n")
     f.write(" ipv6 enable\n")
-    if hostname in root[1][0] :
-        f.write(" ipv6 rip ripng enable\n")
-    elif hostname in root[1][1] :
-        f.write(" ipv6 ospf 7 area 0\n")
+    enableProtocolInterface(root, router, f)
+
     f.write("!\n")
+
+def enableProtocolInterface(root, router, f) :
+    ASN = getASNOfRouter(root, router)
+    protocol = getASProtocol(root, ASN)
+
+    if protocol == "RIPNG" :
+        f.write(" ipv6 rip ripng enable\n")
+    elif protocol == "OSPFv3" :
+        f.write(" ipv6 ospf 7 area 0\n")
+
 
 def defaultInfoHead(f, router):
     """_summary_ : Writes the default information header of the configuration file
@@ -376,7 +386,7 @@ def getAllRouters(root):
     
     return lR
 
-def getASOfRouter(root, router): #A jour
+def getASNOfRouter(root, router): #A jour
     """_summary_ : Gets the AS of a router
 
     Args:
@@ -387,15 +397,9 @@ def getASOfRouter(root, router): #A jour
         int: the AS of the router
     """
 
-    # quelque soit le nombre d'AS
-
-
-
     l = getAllRouters(root)
 
     
-    '''l1 = getRoutersInAS(root, 1)
-    l2 = getRoutersInAS(root, 2)'''
     hostname = getRouterName(router)
 
 
@@ -431,7 +435,7 @@ def isBorderRouter(root, router) : #A jour
     """
     hostname = getRouterName(router)
     lNeighbors = getNeighbors(router)
-    CurrentAS = getASOfRouter(root, router)
+    CurrentAS = getASNOfRouter(root, router)
     print(CurrentAS)
     CurrentASRouters = getRoutersInAS(root, CurrentAS)
     border = False
@@ -457,7 +461,7 @@ def deployProtocol(root, router):
     """
     hostname = getRouterName(router)
     n = getRouterNumber(router)
-    ASN = getASOfRouter(root, router)
+    ASN = getASNOfRouter(root, router)
     ASNs = str(ASN)
     border, borderNei, address_ebgp = isBorderRouter(root, router)
 
@@ -569,6 +573,11 @@ if __name__ == "__main__":
 
 
     
+    '''
+    Nouveaux changements :
+        ajout de la fonction enableProtocolInterface
+        
 
+    '''
 
 
