@@ -330,7 +330,6 @@ def enableProtocolInterface(root, router, f) :
     elif protocol == "OSPFv3" :
         f.write(" ipv6 ospf 7 area 0\n")
 
-
 def defaultInfoHead(f, router):
     """_summary_ : Writes the default information header of the configuration file
 
@@ -340,7 +339,7 @@ def defaultInfoHead(f, router):
     """
     f.write("service timestamps debug datetime msec\nservice timestamps log datetime msec\n!\nhostname "+getRouterName(router)+"\n!\nboot-start-marker\nboot-end-marker\n!\n!\n!\nno aaa new-model\nno ip icmp rate-limit unreachable\nip cef\n!\n!\n!\nno ip domain lookup\nipv6 unicast-routing\nipv6 cef\n!\n!\n!\nmultilink bundle-name authenticated\n!\n!\n!\nip tcp synwait-time 5\n!\n!\n!\n")
 
-def defaultInfoFoot(f, router):
+def defaultInfoFoot(root, f, router):
     """_summary_ : Writes the default information footer of the configuration file
 
     Args:
@@ -348,6 +347,8 @@ def defaultInfoFoot(f, router):
         router (ET.Element): the router
     """
     hostname = getRouterName(router)
+    border = border, borderNei, address_ebgp, nei_inerf = isBorderRouter(root, router)
+    nei_interface_name = nei_inerf.find('type').text+nei_inerf.get('number')+"/0"
     f.write("ip forward-protocol nd\nno ip http server\nno ip http secure-server\n")
     found = False
     for routersAS in root[0].iter('router'):
@@ -359,6 +360,9 @@ def defaultInfoFoot(f, router):
             if routersAS.get('hostname') == hostname :
                 n = router.get('Rnumber')
                 f.write("!\nipv6 router ospf 7\n router-id "+n+"."+n+"."+n+"."+n+"\n")
+                if border :
+                    f.write(" passive-interface " + nei_interface_name + "\n")
+                    f.write(" redistribute rip subnets\n")
     f.write("!\n!\ncontrol-plane\n!\n!\nline con 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline aux 0\n exec-timeout 0 0\n privilege level 15\n logging synchronous\n stopbits 1\nline vty 0 4\n login\n!\n!\nend\n")
 
 def getRoutersArray(root): #Non utilisé pour l'instant : pas de description
@@ -412,17 +416,14 @@ def getASNOfRouter(root, router): #A jour
             return i+1
             break
 
-            
-
 def getAdjacentAS(root, router):
     l = getAllRouters(root)
-    border, borderNei, address_ebgp = isBorderRouter(root, router)
+    border, borderNei, address_ebgp, nei_interf = isBorderRouter(root, router)
     if border :
         for i in range(len(l)) :
             if borderNei in l[i] :
                 return i+1
                 break
-
 
 def getOtherASes(router): 
     pass
@@ -442,6 +443,7 @@ def isBorderRouter(root, router) : #A jour
     CurrentAS = getASNOfRouter(root, router)
     # print(CurrentAS)
     CurrentASRouters = getRoutersInAS(root, CurrentAS)
+    #print(lNeighbors)
     border = False
     Router = 'None'
     address_ebgp = 'None'
@@ -453,8 +455,9 @@ def isBorderRouter(root, router) : #A jour
             Router = lNeighbors[i]
         i+=1
 
-    address_ebgp = str(getInterfaceFromNei(router, Router).find('address').text)
-    return (border,Router,address_ebgp)
+    Nei_Interface = getInterfaceFromNei(router, Router)
+    address_ebgp = str(Nei_Interface.find('address').text)
+    return (border,Router,address_ebgp, Nei_Interface)
     
 def deployProtocol(root, router):
     """_summary_ : Writes the protocol configuration of the router
@@ -467,7 +470,7 @@ def deployProtocol(root, router):
     n = getRouterNumber(router)
     ASN = getASNOfRouter(root, router)
     ASNs = str(ASN)
-    border, borderNei, address_ebgp = isBorderRouter(root, router)
+    border, borderNei, address_ebgp, nei_interf= isBorderRouter(root, router)
 
     OASN = getAdjacentAS(root, router)
     OASNs = str(OASN)
@@ -478,17 +481,20 @@ def deployProtocol(root, router):
     f.write(" bgp log-neighbor-changes\n")
     f.write(" no bgp default ipv4-unicast\n")
 
-    if border : 
-        for interface in router :
-            if interface.find('neighbor').text != borderNei :
-                f.write(" neighbor "+getInterfaceAddress(interface)+" remote-as "+ASNs+"\n")
-            else :
-                f.write(" neighbor "+getInterfaceAddress(interface)+" remote-as "+ OASNs+"\n")
+    # je dois prendre une adresse de chaque routeur et la mettre en remote-as
+    ASp = getASPosition(root, ASN)
+    AS = root[ASp]
+    for router_2 in AS :
+        if getRouterName(router_2) != hostname :
+            a = router_2[0].find('address').text
+            f.write(" neighbor "+a+" remote-as "+ASNs+"\n")
 
-    else : 
+
+    if border :
         for interface in router :
-            f.write(" neighbor "+getInterfaceAddress(interface)+" remote-as "+ASNs+"\n")
-        
+            if interface.find('neighbor').text == borderNei :
+                f.write(" neighbor "+getInterfaceAddress(interface)+" remote-as "+ OASNs+"\n")
+    
     f.write(" !\n")
     f.write(" address-family ipv4\n")
     f.write(" exit-address-family\n")
@@ -496,21 +502,20 @@ def deployProtocol(root, router):
     f.write(" address-family ipv6\n")
 
     if border :
-        address = getASAddress(root, ASN)
-        address = address[0:11]
-        # print(address)
+        f.write("  network " + getASPrefix(root, ASN)+"/48\n")
 
-        nblinks = getASLinksNum(root, ASN)
-        for i in range(1,nblinks+1) :
-            f.write("  network "+address+str(i)+"::/64\n")
+    for router_2 in AS :
+        if getRouterName(router_2) != hostname :
+            a = router_2[0].find('address').text
+            f.write("  neighbor "+a+" activate\n")
 
-        # adresse de la liaison interAS :
-        network_ebgp = address_ebgp[:-1]
-        f.write("  network "+network_ebgp+"/64\n")
+    if border :
+        for interface in router :
+            if interface.find('neighbor').text == borderNei :
+                f.write("  neighbor "+getInterfaceAddress(interface)+" activate\n")
 
+    
 
-    for interface in router :
-        f.write("  neighbor "+getInterfaceAddress(interface)+" activate\n")
     f.write(" exit-address-family\n")
     f.write("!\n")
 
@@ -563,7 +568,7 @@ if __name__ == "__main__":
 
                 deployProtocol(root, router)
 
-                defaultInfoFoot(f, router)
+                defaultInfoFoot(root, f, router)
 
                 f.close()
             except :
@@ -592,9 +597,7 @@ if __name__ == "__main__":
 
     # il reste à faire :
 
-    # " ipv6 rip ripng enable" sur chaque interface
-    # "ipv6 router rip ripng
-    #   redistribute connected"
+    # iBGP : il faut mettre tous les routeurs en neighbor
 
     # eBGP (remote-as)
     # faire des tests sur GNS3 et comparer les config files, encore aucun test fait à part génerer les files
