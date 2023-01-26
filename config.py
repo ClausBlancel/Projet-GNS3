@@ -79,6 +79,7 @@ def getInterfaceNei(interface):
     Returns:
         string: its neighbor (the router's name)
     """
+    #print(interface.find('neighbor').text)
     return interface.find('neighbor').text
 
 def getInterfaceFromNei(router, nei):
@@ -160,6 +161,10 @@ def getRoutersInAS(root, ASnumber): #A jour
     for router in root[n].iter('router'):
         lRouters.append(str(getRouterName(router)))
     return lRouters
+
+def getRouterFromName(root, routerName):
+    router = root.find(".//*[@hostname='"+routerName+"']")
+    return router
 
 def getASLinksNum(root, ASnumber) : #A jour
     """_summary_ : Gets the number of links of an AS
@@ -273,13 +278,42 @@ def setAddresses(root, AS):
     ASInterfacesQtty = getASInterfQtty(root, AS)
     prefix = getASPrefix(root, ASnumber_int)
 
-    i = 1
 
+    # pour chaque routeur
+        # pour chaque interface
+            # on checke si le couple existe deja
+            # s'il n'existe pas :
+                # on l'ajoute à la liste
+                # on incrémente de 1 pour lui donner une adress unique
+            # s'il existe :
+                # on reprend le numéro choisi pour l'interface en face
+                # on lui donne une adresse en l'utilisant
 
+    l = [] # tableau où stocker les liens numérotés par AS
+    #i = 2
+    
+    
 
-    for router in AS:
+    for router in AS :
+
+        hostname = getRouterName(router)
+
         for interface in router :
-            address = prefix + str(i)
+            j = 2
+            
+            neighbor = getInterfaceNei(interface)
+            element1 = [hostname, neighbor]
+            element2 = [neighbor, hostname]
+            if element1 not in l and element2 not in l:
+                l.append(element1)
+                i = len(l)
+                j = 1
+            elif element1 in l :
+                i = l.index(element1)+1
+            elif element2 in l : 
+                i = l.index(element2)+1
+            
+            address = prefix + str(i) + "::" + str(j)
 
             # Find the element to add/modify
             elem_to_modify = interface.find("address")
@@ -292,7 +326,44 @@ def setAddresses(root, AS):
                 new_line_element = ET.Element("address")
                 new_line_element.text = address
                 interface.append(new_line_element)
-            i+=1
+
+    tree.write(configfile, xml_declaration=True, encoding='utf-8', method="xml")
+
+def setBorderAddresses(root,AS) :
+            
+    borderCouples = getBorderCouples(root)
+
+    for router in AS :
+
+        border, borderNei, address_ebgp, nei_interf = isBorderRouter(root, router)
+        hostname = getRouterName(router)
+
+        if border :
+
+            for interface in router :
+                v = 0
+                k = 0
+                j = 2
+                if getInterfaceNei(interface) == borderNei :
+                    address = "2001:100:3:"
+                    for m in range(len(borderCouples)) :
+                        couple = borderCouples[m]
+                        if hostname in couple : v = m+1
+                        for n in range(len(couple)) :
+                            if hostname == couple[n] : k = n+1
+                    address += str(v)+"::"+str(k)
+
+                    # Find the element to add/modify
+                    elem_to_modify = interface.find("address")
+
+                    # If the element already exists
+                    if elem_to_modify is not None :
+                        # Modify the element's attribute
+                        elem_to_modify.text = address
+                    else :
+                        new_line_element = ET.Element("address")
+                        new_line_element.text = address
+                        interface.append(new_line_element)
 
     tree.write(configfile, xml_declaration=True, encoding='utf-8', method="xml")
 
@@ -306,7 +377,7 @@ def writeAddresses(AS, router, interface, f, tree):
     """
     hostname = getRouterName(router)   
 
-
+    #print(getInterfaceAddress(interface))
     f.write("interface "+getInterfaceType(interface)+getInterfaceNumber(interface)+"/0\n")
     f.write(" no ip address\n")
 
@@ -347,7 +418,7 @@ def defaultInfoFoot(root, f, router):
         router (ET.Element): the router
     """
     hostname = getRouterName(router)
-    border = border, borderNei, address_ebgp, nei_inerf = isBorderRouter(root, router)
+    border, borderNei, address_ebgp, nei_inerf = isBorderRouter(root, router)
     nei_interface_name = nei_inerf.find('type').text+nei_inerf.get('number')+"/0"
     f.write("ip forward-protocol nd\nno ip http server\nno ip http secure-server\n")
     found = False
@@ -428,6 +499,20 @@ def getAdjacentAS(root, router):
 def getOtherASes(router): 
     pass
 
+def getBorderCouples(root):
+    l = []
+    for AS in root :
+        for router in AS :
+            border, borderNei, address_ebgp, nei_interf= isBorderRouter(root, router)
+            if border :
+                hostname = getRouterName(router)
+                element1 = [hostname, borderNei]
+                element2 = [borderNei, hostname]
+                if element1 not in l and element2 not in l:
+                    l.append(element1)
+                
+    return(l)
+
 def isBorderRouter(root, router) : #A jour
     """_summary_ : Checks if a router is a border router
 
@@ -454,6 +539,8 @@ def isBorderRouter(root, router) : #A jour
             border = True
             Router = lNeighbors[i]
         i+=1
+    
+    #print(type(Router))
 
     Nei_Interface = getInterfaceFromNei(router, Router)
     address_ebgp = str(Nei_Interface.find('address').text)
@@ -489,11 +576,28 @@ def deployProtocol(root, router):
             a = router_2[0].find('address').text
             f.write(" neighbor "+a+" remote-as "+ASNs+"\n")
 
+    # quelle adresse je dois mettre en remote-as OASNs? -> l'adresse de l'interface voisine de bordure
+    # Comment la récupérer?
+    # Pour un routeur on cherche l'interface de bordure
+    # On récolte le nom du voisin
+    # On cherche l'interface de bordure 
+    # On récolte l'adresse de l'interface
 
     if border :
+        borderNeighbor = getRouterFromName(root, borderNei)
+        border1, borderNei1, address_ebgp1, nei_interf1= isBorderRouter(root, borderNeighbor)
+        f.write(" neighbor "+address_ebgp1+" remote-as "+ OASNs+"\n")
+        print(address_ebgp1)
+
+
+    '''if border :
         for interface in router :
             if interface.find('neighbor').text == borderNei :
-                f.write(" neighbor "+getInterfaceAddress(interface)+" remote-as "+ OASNs+"\n")
+                borderNeighbor = getRouterFromName(root, borderNei)
+                Nei_Interface = getInterfaceFromNei(borderNeighbor, hostname)
+                address_ebgp = str(Nei_Interface.find('address').text)
+                print(address_ebgp)
+                f.write(" neighbor "+address_ebgp+" remote-as "+ OASNs+"\n")'''
     
     f.write(" !\n")
     f.write(" address-family ipv4\n")
@@ -518,7 +622,6 @@ def deployProtocol(root, router):
 
     f.write(" exit-address-family\n")
     f.write("!\n")
-
 
 def getConfigFilesPaths(directory, confFiles):
     """_summary_ : Returns a list of paths to all config files from a directory
@@ -551,10 +654,13 @@ if __name__ == "__main__":
     tree, root = initXML() # crée la racine et la stocke dans la variable root
 
     confFiles = []
-    confFiles = getConfigFilesPaths('C:\\Users\\lucas\\GNS3\\projects\\testP\\project-files\\dynamips', confFiles)
+    confFiles = getConfigFilesPaths('/home/alaalouj/Documents/3TC/GNS3/test_fichiers/untitled/project-files/dynamips', confFiles)
 
     for AS in root :
         setAddresses(root, AS)
+    for AS in root :
+        setBorderAddresses(root,AS)
+    for AS in root :
         for router in AS :
             # on génere la config file et on la remplit d'abord avec ce qui ne dépend pas des interfaces
             
@@ -579,7 +685,7 @@ if __name__ == "__main__":
             except :
                 print("File not found")
 
-            try :
+            '''try :
                 defaultInfoHead(f, router)
 
                 for interface in router :
@@ -587,13 +693,25 @@ if __name__ == "__main__":
 
                 deployProtocol(root, router)
 
-                defaultInfoFoot(f, router)
+                defaultInfoFoot(root, f, router)
 
                 f.close()
                 print("File written successfully")
             except :
-                print("Error while writing the file")
-                
+                print("Error while writing the file")'''
+            defaultInfoHead(f, router)
+
+            for interface in router :
+                writeAddresses(AS, router, interface,f,tree)
+
+            deployProtocol(root, router)
+
+            defaultInfoFoot(root, f, router)
+
+            f.close()
+            print("File written successfully")
+
+            
 
     # il reste à faire :
 
