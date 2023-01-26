@@ -192,19 +192,6 @@ def getASProtocol(root, ASnumber): #A jour
     i = getASPosition(root, ASnumber)
     return (root[i]).get('protocol')
 
-def getASAddress(root, ASnumber): #Defectueux
-    """_summary_ : Gets the addressing of an AS
-
-    Args:
-        root (ET.Element): the root of the XML tree
-        ASnumber (int): the number of the AS
-
-    Returns:
-        string: the addressing of the AS
-    """
-    i = getASPosition(root, ASnumber)
-    return (root[i]).get('addressing')
-
 def getASPrefix(root, ASnumber):
     """_summary_ : Gets the prefix of an AS
 
@@ -366,6 +353,24 @@ def setBorderAddresses(root,AS) :
                         interface.append(new_line_element)
 
     tree.write(configfile, xml_declaration=True, encoding='utf-8', method="xml")
+
+def getLinksList(root,AS):
+
+    ll = []
+    ASN = getASName_int(root, AS)
+    prefix = getASPrefix(root,ASN)
+
+    for router in AS :
+        for interface in router :
+            address = getInterfaceAddress(interface)
+            prefCheck = address[0:11]
+            if prefCheck == prefix :
+                linkAdress = address[0:-3]
+                if linkAdress not in ll :
+                    ll.append(linkAdress)
+
+    return ll
+
 
 def writeAddresses(AS, router, interface, f, tree):
     """_summary_ : Writes the addresses of an interface in the configuration file
@@ -562,6 +567,9 @@ def deployProtocol(root, router):
     OASN = getAdjacentAS(root, router)
     OASNs = str(OASN)
 
+    p = getASPosition(root, ASN)
+    AS = root[p]
+    ll = getLinksList(root, AS)
 
     f.write("router bgp "+ ASNs+"\n")
     f.write(" bgp router-id "+n+"."+n+"."+n+"."+n+"\n")
@@ -606,18 +614,24 @@ def deployProtocol(root, router):
     f.write(" address-family ipv6\n")
 
     if border :
-        for i in range(1, 11) :
-            f.write("  network " + getASPrefix(root, ASN) + i +":/64\n")
+        
+        
+        for i in ll :
+            f.write("  network " + i +"::/64\n")
+        s = address_ebgp[0:-1]
+        f.write("  network " + s +"/64\n")
+        
 
     for router_2 in AS :
         if getRouterName(router_2) != hostname :
             a = router_2[0].find('address').text
             f.write("  neighbor "+a+" activate\n")
 
+    
     if border :
-        for interface in router :
-            if interface.find('neighbor').text == borderNei :
-                f.write("  neighbor "+getInterfaceAddress(interface)+" activate\n")
+        borderNeighbor = getRouterFromName(root, borderNei)
+        border1, borderNei1, address_ebgp1, nei_interf1= isBorderRouter(root, borderNeighbor)
+        f.write("  neighbor "+address_ebgp1+" activate\n")
 
     
 
@@ -701,17 +715,17 @@ if __name__ == "__main__":
                 print("File written successfully")
             except :
                 print("Error while writing the file")
-            # defaultInfoHead(f, router)
+            '''defaultInfoHead(f, router)
 
-            # for interface in router :
-            #     writeAddresses(AS, router, interface,f,tree)
+            for interface in router :
+                writeAddresses(AS, router, interface,f,tree)
 
-            # deployProtocol(root, router)
+            deployProtocol(root, router)
 
-            # defaultInfoFoot(root, f, router)
+            defaultInfoFoot(root, f, router)
 
-            # f.close()
-            # print("File written successfully")
+            f.close()
+            print("File written successfully")'''
 
             
 

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <data qtty="2">
-    <AS addressing="2001:100:1::/48" name="1" nblinks="10" nbrouters="7" prefix="2001:100:1:" protocol="RIPNG">        
+    <AS name="1" nblinks="10" nbrouters="7" prefix="2001:100:1:" protocol="RIPNG">        
         <router Rnumber="1" hostname="R1">
             <interface number="1">
                 <type>GigabitEthernet</type>
@@ -111,7 +111,7 @@
         </router>
     </AS>
 
-    <AS addressing="2001:100:2::/48" name="2" nblinks="10" nbrouters="7" prefix="2001:100:2:" protocol="OSPFv3">
+    <AS name="2" nblinks="10" nbrouters="7" prefix="2001:100:2:" protocol="OSPFv3">
 
         <router Rnumber="8" hostname="R8">
             <interface number="0">
