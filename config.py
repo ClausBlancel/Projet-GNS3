@@ -606,7 +606,8 @@ def deployProtocol(root, router):
     f.write(" address-family ipv6\n")
 
     if border :
-        f.write("  network " + getASPrefix(root, ASN)+"/48\n")
+        for i in range(1, 11) :
+            f.write("  network " + getASPrefix(root, ASN) + i +":/64\n")
 
     for router_2 in AS :
         if getRouterName(router_2) != hostname :
@@ -653,8 +654,9 @@ if __name__ == "__main__":
 
     tree, root = initXML() # crée la racine et la stocke dans la variable root
 
+    pDirectoryPath = input("Entrez le chemin vers le dossier du projet : ")
     confFiles = []
-    confFiles = getConfigFilesPaths('/home/alaalouj/Documents/3TC/GNS3/test_fichiers/untitled/project-files/dynamips', confFiles)
+    confFiles = getConfigFilesPaths(pDirectoryPath, confFiles)
 
     for AS in root :
         setAddresses(root, AS)
@@ -685,7 +687,7 @@ if __name__ == "__main__":
             except :
                 print("File not found")
 
-            '''try :
+            try :
                 defaultInfoHead(f, router)
 
                 for interface in router :
@@ -698,18 +700,18 @@ if __name__ == "__main__":
                 f.close()
                 print("File written successfully")
             except :
-                print("Error while writing the file")'''
-            defaultInfoHead(f, router)
+                print("Error while writing the file")
+            # defaultInfoHead(f, router)
 
-            for interface in router :
-                writeAddresses(AS, router, interface,f,tree)
+            # for interface in router :
+            #     writeAddresses(AS, router, interface,f,tree)
 
-            deployProtocol(root, router)
+            # deployProtocol(root, router)
 
-            defaultInfoFoot(root, f, router)
+            # defaultInfoFoot(root, f, router)
 
-            f.close()
-            print("File written successfully")
+            # f.close()
+            # print("File written successfully")
 
             
 
